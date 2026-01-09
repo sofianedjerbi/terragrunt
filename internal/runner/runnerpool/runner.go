@@ -785,11 +785,18 @@ func (r *Runner) syncTerraformCliArgs(l log.Logger, opts *options.TerragruntOpti
 
 			if unit.Execution.TerragruntOptions.TerraformCommand == tf.CommandNamePlan {
 				// for plan command add -out=<file> to the terraform cli args
-				unit.Execution.TerragruntOptions.TerraformCliArgs = append(unit.Execution.TerragruntOptions.TerraformCliArgs, "-out="+planFile)
+				outArg := "-out=" + planFile
+				if !slices.Contains(unit.Execution.TerragruntOptions.TerraformCliArgs, outArg) {
+					unit.Execution.TerragruntOptions.TerraformCliArgs = append(unit.Execution.TerragruntOptions.TerraformCliArgs, outArg)
+				}
+
 				continue
 			}
 
-			unit.Execution.TerragruntOptions.TerraformCliArgs = append(unit.Execution.TerragruntOptions.TerraformCliArgs, planFile)
+			// avoid duplicate plan file when already present from discovery context
+			if !slices.Contains(unit.Execution.TerragruntOptions.TerraformCliArgs, planFile) {
+				unit.Execution.TerragruntOptions.TerraformCliArgs = append(unit.Execution.TerragruntOptions.TerraformCliArgs, planFile)
+			}
 		}
 	}
 }
